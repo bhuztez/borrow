@@ -135,6 +135,47 @@ namespace borrow {
   }
 
 
+  template<typename Parent, typename Self,
+           bool value = all_alive(Const<Parent, Self>{})>
+  constexpr
+  bool
+  available(Const<Parent, Self>) {
+    return value;
+  }
+
+  template<typename Parent, typename Self,
+           bool A = all_alive(Const<Parent, Self>{}),
+           typename = typename ::std::enable_if<not A>::type>
+  constexpr
+  bool
+  available(Mut<Parent, Self>) {
+    return false;
+  }
+
+  template<typename Parent, typename Self,
+           bool A = all_alive(Const<Parent, Self>{}),
+           typename = typename ::std::enable_if<A>::type,
+           int N = next<Self>(0),
+           typename = typename ::std::enable_if<(N == 0)>::type>
+  constexpr
+  bool
+  available(Mut<Parent, Self>) {
+    return true;
+  }
+
+  template<typename Parent, typename Self,
+           bool A = all_alive(Const<Parent, Self>{}),
+           typename = typename ::std::enable_if<A>::type,
+           int N = next<Self>(0),
+           typename = typename ::std::enable_if<(N > 0)>::type,
+           typename State = decltype(state(Counter<Self,N-1>{})),
+           bool A2 = any_alive(State{})>
+  constexpr
+  bool
+  available(Mut<Parent, Self>) {
+    return not A2;
+  }
+
 
   // borrow pointer
   template<typename, typename>
